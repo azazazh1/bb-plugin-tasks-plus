@@ -35,15 +35,33 @@ describe("listPreferenceScope", () => {
 describe("sanitizeListPreference", () => {
   it("returns defaults for missing or garbage input", () => {
     expect(sanitizeListPreference(undefined)).toEqual({
-      filters: { statuses: [], priorities: [], labelNames: [] },
+      filters: {
+        statuses: [],
+        priorities: [],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "manual",
     });
     expect(sanitizeListPreference(null)).toEqual({
-      filters: { statuses: [], priorities: [], labelNames: [] },
+      filters: {
+        statuses: [],
+        priorities: [],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "manual",
     });
     expect(sanitizeListPreference("nope")).toEqual({
-      filters: { statuses: [], priorities: [], labelNames: [] },
+      filters: {
+        statuses: [],
+        priorities: [],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "manual",
     });
   });
@@ -55,6 +73,8 @@ describe("sanitizeListPreference", () => {
           statuses: ["todo", "not-a-status", "todo", "done"],
           priorities: ["high", 3, "high", "telepathic"],
           labelNames: [" Bug ", "", "Bug", "Feature", 12],
+          projectIds: ["proj-1", "proj-1", ""],
+          search: "  task query  ",
         },
         sort: "priority-please",
       }),
@@ -63,6 +83,8 @@ describe("sanitizeListPreference", () => {
         statuses: ["todo", "done"],
         priorities: ["high"],
         labelNames: ["Bug", "Feature"],
+        projectIds: ["proj-1"],
+        search: "  task query  ",
       },
       sort: "manual",
     });
@@ -75,6 +97,8 @@ describe("sanitizeListPreference", () => {
           statuses: ["in_progress"],
           priorities: ["urgent", "none"],
           labelNames: ["infra"],
+          projectIds: ["proj-2"],
+          search: "fix",
         },
         sort: "due",
       }),
@@ -83,6 +107,8 @@ describe("sanitizeListPreference", () => {
         statuses: ["in_progress"],
         priorities: ["urgent", "none"],
         labelNames: ["infra"],
+        projectIds: ["proj-2"],
+        search: "fix",
       },
       sort: "due",
     });
@@ -103,6 +129,8 @@ describe("loadListPreference / storeListPreference", () => {
         statuses: ["todo"],
         priorities: ["high"],
         labelNames: ["Bug"],
+        projectIds: ["proj-1"],
+        search: "test",
       },
       sort: "priority",
     });
@@ -111,6 +139,8 @@ describe("loadListPreference / storeListPreference", () => {
         statuses: ["done"],
         priorities: [],
         labelNames: [],
+        projectIds: [],
+        search: "",
       },
       sort: "due",
     });
@@ -120,6 +150,8 @@ describe("loadListPreference / storeListPreference", () => {
         statuses: ["todo"],
         priorities: ["high"],
         labelNames: ["Bug"],
+        projectIds: ["proj-1"],
+        search: "test",
       },
       sort: "priority",
     });
@@ -128,11 +160,19 @@ describe("loadListPreference / storeListPreference", () => {
         statuses: ["done"],
         priorities: [],
         labelNames: [],
+        projectIds: [],
+        search: "",
       },
       sort: "due",
     });
     expect(loadListPreference("active")).toEqual({
-      filters: { statuses: [], priorities: [], labelNames: [] },
+      filters: {
+        statuses: [],
+        priorities: [],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "manual",
     });
 
@@ -145,15 +185,33 @@ describe("loadListPreference / storeListPreference", () => {
 
   it("persists an explicit clear (empty filters + manual sort)", () => {
     storeListPreference("all", {
-      filters: { statuses: ["todo"], priorities: [], labelNames: [] },
+      filters: {
+        statuses: ["todo"],
+        priorities: [],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "priority",
     });
     storeListPreference("all", {
-      filters: { statuses: [], priorities: [], labelNames: [] },
+      filters: {
+        statuses: [],
+        priorities: [],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "manual",
     });
     expect(loadListPreference("all")).toEqual({
-      filters: { statuses: [], priorities: [], labelNames: [] },
+      filters: {
+        statuses: [],
+        priorities: [],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "manual",
     });
   });
@@ -181,7 +239,13 @@ describe("loadListPreference / storeListPreference", () => {
       }),
     );
     expect(loadListPreference("all")).toEqual({
-      filters: { statuses: [], priorities: ["high"], labelNames: [] },
+      filters: {
+        statuses: [],
+        priorities: ["high"],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "priority",
     });
   });
@@ -199,11 +263,23 @@ describe("loadListPreference / storeListPreference", () => {
     });
     window.localStorage.setItem(LIST_PREFERENCE_STORAGE_KEY, future);
     expect(loadListPreference("all")).toEqual({
-      filters: { statuses: ["todo"], priorities: [], labelNames: [] },
+      filters: {
+        statuses: ["todo"],
+        priorities: [],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "due",
     });
     storeListPreference("all", {
-      filters: { statuses: ["done"], priorities: [], labelNames: [] },
+      filters: {
+        statuses: ["done"],
+        priorities: [],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "manual",
     });
     // Older client must not down-convert a newer document.
@@ -218,7 +294,13 @@ describe("loadListPreference / storeListPreference", () => {
     });
     expect(() =>
       storeListPreference("all", {
-        filters: { statuses: ["todo"], priorities: [], labelNames: [] },
+        filters: {
+          statuses: ["todo"],
+          priorities: [],
+          labelNames: [],
+          projectIds: [],
+          search: "",
+        },
         sort: "manual",
       }),
     ).not.toThrow();
@@ -229,7 +311,13 @@ describe("loadListPreference / storeListPreference", () => {
       throw new DOMException("Storage is disabled", "SecurityError");
     });
     expect(loadListPreference("all")).toEqual({
-      filters: { statuses: [], priorities: [], labelNames: [] },
+      filters: {
+        statuses: [],
+        priorities: [],
+        labelNames: [],
+        projectIds: [],
+        search: "",
+      },
       sort: "manual",
     });
   });

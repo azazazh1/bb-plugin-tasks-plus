@@ -31,11 +31,15 @@ describe("listScrollScopeKey", () => {
       statuses: ["todo", "done"],
       priorities: [],
       labelNames: ["b", "a"],
+      projectIds: ["p2", "p1"],
+      search: "query",
     };
     const b: ListFilterState = {
       statuses: ["done", "todo"],
       priorities: [],
       labelNames: ["a", "b"],
+      projectIds: ["p1", "p2"],
+      search: "query",
     };
     expect(listScrollScopeKey({ ...base, filters: a })).toBe(
       listScrollScopeKey({ ...base, filters: b }),
@@ -52,11 +56,15 @@ describe("listScrollScopeKey", () => {
       statuses: [],
       priorities: [],
       labelNames: ["a,b"],
+      projectIds: [],
+      search: "",
     };
     const twoLabels: ListFilterState = {
       statuses: [],
       priorities: [],
       labelNames: ["a", "b"],
+      projectIds: [],
+      search: "",
     };
     expect(listScrollScopeKey({ ...base, filters: withComma })).not.toBe(
       listScrollScopeKey({ ...base, filters: twoLabels }),

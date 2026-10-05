@@ -95,12 +95,24 @@ export function matchesFilters(
   statuses: readonly TaskStatus[],
   priorities: readonly TaskPriority[],
   labelIds: readonly string[],
+  projectIds: readonly string[] = [],
+  search = "",
 ): boolean {
-  return (
-    (statuses.length === 0 || statuses.includes(task.status)) &&
-    (priorities.length === 0 || priorities.includes(task.priority)) &&
-    (labelIds.length === 0 || task.labelIds.some((id) => labelIds.includes(id)))
-  );
+  if (statuses.length > 0 && !statuses.includes(task.status)) return false;
+  if (priorities.length > 0 && !priorities.includes(task.priority)) return false;
+  if (labelIds.length > 0 && !task.labelIds.some((id) => labelIds.includes(id))) {
+    return false;
+  }
+  if (projectIds.length > 0 && !projectIds.includes(task.projectId)) return false;
+  const query = search.trim().toLowerCase();
+  if (query.length > 0) {
+    const match =
+      task.title.toLowerCase().includes(query) ||
+      task.key.toLowerCase().includes(query) ||
+      task.description.toLowerCase().includes(query);
+    if (!match) return false;
+  }
+  return true;
 }
 
 function makeEntry(prev: TaskEntry | undefined): {

@@ -96,6 +96,20 @@ function uniqueLabelNames(values: unknown): string[] {
   return result;
 }
 
+function uniqueProjectIds(values: unknown): string[] {
+  if (!Array.isArray(values)) return [];
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    if (typeof value !== "string") continue;
+    const id = value.trim();
+    if (id.length === 0 || seen.has(id)) continue;
+    seen.add(id);
+    result.push(id);
+  }
+  return result;
+}
+
 function sanitizeSort(value: unknown): TaskSort {
   if (typeof value === "string" && SORT_SET.has(value)) {
     return value as TaskSort;
@@ -123,6 +137,8 @@ export function sanitizeListPreference(raw: unknown): ListPreference {
       statuses: uniqueValidStatuses(filtersRaw.statuses),
       priorities: uniqueValidPriorities(filtersRaw.priorities),
       labelNames: uniqueLabelNames(filtersRaw.labelNames),
+      projectIds: uniqueProjectIds(filtersRaw.projectIds),
+      search: typeof filtersRaw.search === "string" ? filtersRaw.search : "",
     },
     sort: sanitizeSort(record.sort),
   };

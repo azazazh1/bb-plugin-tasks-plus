@@ -173,6 +173,18 @@ export function ListView({ projectId, activeOnly = false }: ListViewProps) {
     [projects.data],
   );
 
+  const projectOptions = useMemo(
+    () =>
+      projectId === null
+        ? (projects.data ?? []).map((project) => ({
+            id: project.id,
+            name: project.name,
+            color: project.color,
+          }))
+        : [],
+    [projectId, projects.data],
+  );
+
   // Optimistic edits are overlaid before sorting/grouping so an edited row jumps
   // to its new status group immediately, and the active status/priority/label
   // filters are re-applied so a row that no longer matches drops out at once
@@ -185,6 +197,8 @@ export function ListView({ projectId, activeOnly = false }: ListViewProps) {
         filters.statuses,
         filters.priorities,
         labelIds ?? [],
+        filters.projectIds,
+        filters.search,
       ),
     );
   }, [
@@ -193,6 +207,8 @@ export function ListView({ projectId, activeOnly = false }: ListViewProps) {
     filters.statuses,
     filters.priorities,
     labelIds,
+    filters.projectIds,
+    filters.search,
   ]);
   const groups = useMemo(
     () => groupTasksByStatus(sortTasks(displayTasks ?? [], sort)),
@@ -354,6 +370,7 @@ export function ListView({ projectId, activeOnly = false }: ListViewProps) {
         sort={sort}
         onSortChange={setSort}
         labelOptions={labelOptions}
+        projectOptions={projectOptions}
         taskCount={displayTasks?.length}
       />
       <div

@@ -76,6 +76,14 @@ describe("matchesFilters", () => {
     expect(matchesFilters(t, [], [], ["B"])).toBe(false);
     expect(matchesFilters(t, [], [], ["B", "A"])).toBe(true);
   });
+
+  it("filters by project and search query", () => {
+    expect(matchesFilters(t, [], [], [], [t.projectId])).toBe(true);
+    expect(matchesFilters(t, [], [], [], ["other-proj"])).toBe(false);
+    expect(matchesFilters(t, [], [], [], [], "Task")).toBe(true);
+    expect(matchesFilters(t, [], [], [], [], "TSK-1")).toBe(true);
+    expect(matchesFilters(t, [], [], [], [], "non-existent")).toBe(false);
+  });
 });
 
 describe("begin / settle lifecycle", () => {

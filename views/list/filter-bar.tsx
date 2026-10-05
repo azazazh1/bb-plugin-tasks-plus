@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@bb/shared-ui/dropdown-menu";
 import { Icon, type IconName } from "@bb/shared-ui/icon";
+import { Input } from "@bb/shared-ui/input";
 import { cn } from "@bb/shared-ui/lib/utils";
 import { PriorityIcon, StatusIcon } from "./icons.js";
 import {
@@ -117,23 +118,35 @@ function SortChip({
   );
 }
 
+export interface ProjectFilterOption {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface ListFilterState {
   statuses: TaskStatus[];
   priorities: TaskPriority[];
   labelNames: string[];
+  projectIds: string[];
+  search: string;
 }
 
 export const EMPTY_FILTERS: ListFilterState = {
   statuses: [],
   priorities: [],
   labelNames: [],
+  projectIds: [],
+  search: "",
 };
 
 export function hasActiveFilters(filters: ListFilterState): boolean {
   return (
     filters.statuses.length > 0 ||
     filters.priorities.length > 0 ||
-    filters.labelNames.length > 0
+    filters.labelNames.length > 0 ||
+    (filters.projectIds?.length ?? 0) > 0 ||
+    Boolean(filters.search?.trim())
   );
 }
 
@@ -143,6 +156,7 @@ export function ListFilterBar({
   sort,
   onSortChange,
   labelOptions,
+  projectOptions = [],
   taskCount,
 }: {
   filters: ListFilterState;
@@ -150,6 +164,7 @@ export function ListFilterBar({
   sort: TaskSort;
   onSortChange: (sort: TaskSort) => void;
   labelOptions: readonly LabelFilterOption[];
+  projectOptions?: readonly ProjectFilterOption[];
   taskCount: number | undefined;
 }) {
   const keepOpen = (event: Event) => event.preventDefault();
@@ -157,12 +172,75 @@ export function ListFilterBar({
   // (including stale names that no longer exist in the catalog).
   const showLabelChip =
     labelOptions.length > 0 || filters.labelNames.length > 0;
+  const showProjectChip =
+    projectOptions.length > 0 || (filters.projectIds?.length ?? 0) > 0;
+  const projectMap = new Map(projectOptions.map((p) => [p.id, p]));
+
   return (
     // The chips live in their own horizontal scroller while the task count is
     // pinned outside it, so the count never wraps and stays visible however
     // many chips overflow a narrow container.
     <div className="flex shrink-0 items-center gap-1.5 border-b border-border-hairline px-3.5 py-1.5">
       <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
+        <div className="relative shrink-0">
+          <Icon
+            name="Search"
+            className="pointer-events-none absolute left-2 top-1/2 size-3 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            value={filters.search ?? ""}
+            onChange={(e) => onChange({ ...filters, search: e.target.value })}
+            placeholder="Search tasks…"
+            aria-label="Search tasks"
+            className="h-6 w-32 rounded-md border-border pl-6 pr-6 text-xs max-md:pointer-coarse:h-8 @sm:w-44"
+          />
+          {filters.search ? (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => onChange({ ...filters, search: "" })}
+              className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center text-muted-foreground hover:text-foreground"
+            >
+              <Icon name="X" className="size-3" />
+            </button>
+          ) : null}
+        </div>
+        {showProjectChip ? (
+          <FilterChip
+            icon="Folder"
+            label="Project"
+            selectedNames={(filters.projectIds ?? []).map(
+              (id) => projectMap.get(id)?.name ?? id,
+            )}
+          >
+            {projectOptions.map((project) => (
+              <DropdownMenuCheckboxItem
+                key={project.id}
+                checked={(filters.projectIds ?? []).includes(project.id)}
+                onSelect={keepOpen}
+                onCheckedChange={(checked) =>
+                  onChange({
+                    ...filters,
+                    projectIds: toggled(
+                      filters.projectIds ?? [],
+                      project.id,
+                      checked === true,
+                    ),
+                  })
+                }
+              >
+                <span className="flex items-center gap-2">
+                  <span
+                    aria-hidden
+                    className="size-2.5 shrink-0 rounded-sm"
+                    style={{ backgroundColor: project.color }}
+                  />
+                  {project.name}
+                </span>
+              </DropdownMenuCheckboxItem>
+            ))}
+          </FilterChip>
+        ) : null}
         <FilterChip
           icon="Circle"
           label="Status"
